@@ -7,14 +7,9 @@ if nargin< 8
     opts = helper_fmriprep_regoptions; % loading default options
 end
 
-% if subject name already contains sub- prefix, remove it
-if strcmp(subjname(1:4),'sub-')
-    subjname = subjname(5:end);
-end
-
 % load stuff
 [img,mask,var] = helper_fmriprep_loadVars(fmriprepdir,subjname,runnum,task,session);
-covariates = helper_fmriprep_Covariates(var,opts.covar); % load covariates
+covariates = helper_fmriprep_covariates(var,opts.covar); % load covariates
 
 % smoothing, if requested
 if opts.FWHM > 0

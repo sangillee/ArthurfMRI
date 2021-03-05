@@ -5,6 +5,9 @@
 % 2021-02-16: incorporated mean centering
 
 function [coef,outcome] = massRegression(X,Y,measure)
+% if any(isnan(X(:))) % for debugging
+%     keyboard
+% end
 assert(~any(isnan(X(:))),'nan found in X matrix')
 assert(~any(isnan(Y(:))),'nan found in Y matrix')
 

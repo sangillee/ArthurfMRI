@@ -5,6 +5,10 @@
 %             now accepts option structure to identify which covariates to include
 
 function covariates = helper_fmriprep_covariates(var,opts)
+if nargin <2
+    opts = helper_fmriprep_regoptions; % default options
+    opts = opts.covar;
+end
 errorchecking(opts) % option struct error checking
 covariates = []; % matrix for covariates
 
@@ -40,12 +44,10 @@ switch opts.motionparams
         motion = loadcovar({'trans_x','trans_y','trans_z','rot_x','rot_y','rot_z','trans_x_power2','trans_y_power2','trans_z_power2','rot_x_power2','rot_y_power2','rot_z_power2'},var);
     case 24
         motion = loadcovar({'trans_x','trans_y','trans_z','rot_x','rot_y','rot_z','trans_x_power2','trans_y_power2','trans_z_power2','rot_x_power2','rot_y_power2','rot_z_power2'},var);
-        motion = [motion,[mean(motion);motion(1:end-1,:)]];
+        motion = [motion,[mean(motion);motion(1:end-1,:)]]; % t-1 motion
+        motion(:,end+1) = [1;zeros(size(motion,1)-1,1)]; % first volume index
 end
 covariates = [covariates,motion];
-
-% first volume index
-covariates(:,end+1) = [1;zeros(size(covariates,1)-1,1)];
 
 % make full rank
 covariates = makeFullRank(covariates);
