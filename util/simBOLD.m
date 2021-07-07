@@ -6,13 +6,18 @@ dt = 0.01;
 boxcar_y = BOXCAR(TR*nvol,fslEV(:,1),fslEV(:,1)+fslEV(:,2),fslEV(:,3),dt);
 if strcmp(type,'fsl')
     signal = conv(local_gamma_hrf(dt),boxcar_y);
+    cutind = (length(signal)-length(boxcar_y));
+    signal = signal(1:end-cutind);
 elseif strcmp(type,'spm')
     signal = conv(local_spm_hrf(dt),boxcar_y);
+    cutind = (length(signal)-length(boxcar_y));
+    signal = signal(1:end-cutind);
+elseif strcmp(type,'box')
+    signal = boxcar_y;
 else
     error('unknown HRF requested')
 end
-cutind = (length(signal)-length(boxcar_y));
-signal = signal(1:end-cutind);
+
 reg = signal(1:(TR/dt):(end-1));
 % if you want to see the results:
 if 0

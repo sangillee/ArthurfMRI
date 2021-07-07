@@ -65,6 +65,7 @@ function vect = binarize(vect)
 % convert a vector that has two values into fals and true
 vals = unique(vect);
 if length(vals) ~= 2
+    vals
     error('more than two categories detected')
 end
 cat1 = vect==vals(1); cat2 = vect==vals(2);

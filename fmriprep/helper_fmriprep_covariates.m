@@ -38,6 +38,8 @@ end
 
 % motion params
 switch opts.motionparams
+    case 0
+        motion = [];
     case 6
         motion = loadcovar({'trans_x','trans_y','trans_z','rot_x','rot_y','rot_z'},var);
     case 12
@@ -46,6 +48,11 @@ switch opts.motionparams
         motion = loadcovar({'trans_x','trans_y','trans_z','rot_x','rot_y','rot_z','trans_x_power2','trans_y_power2','trans_z_power2','rot_x_power2','rot_y_power2','rot_z_power2'},var);
         motion = [motion,[mean(motion);motion(1:end-1,:)]]; % t-1 motion
         motion(:,end+1) = [1;zeros(size(motion,1)-1,1)]; % first volume index
+    case 25
+        motion = loadcovar({'trans_x','trans_y','trans_z','rot_x','rot_y','rot_z','trans_x_power2','trans_y_power2','trans_z_power2','rot_x_power2','rot_y_power2','rot_z_power2'},var);
+        motion = [motion,[mean(motion);motion(1:end-1,:)]]; % t-1 motion
+        motion(:,end+1) = [1;zeros(size(motion,1)-1,1)]; % first volume index
+        motion = [motion,[mean(var.framewise_displacement(2:end));var.framewise_displacement(2:end)]];
 end
 covariates = [covariates,motion];
 
@@ -99,5 +106,5 @@ end
 % additional checks
 assert(ismember(opts.csf,[0,1]),'csf option should be either 0 or 1')
 assert(ismember(opts.white_matter,[0,1]),'white_matter option should be either 0 or 1')
-assert(ismember(opts.motionparams,[0,6,12,24]),'motion param options should be one of 0, 6, 12, or 24')
+assert(ismember(opts.motionparams,[0,6,12,24,25]),'motion param options should be one of 0, 6, 12, or 24')
 end
