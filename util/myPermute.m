@@ -1,15 +1,12 @@
-function [clusterinvp,rawinvpmap,statmap] = myPermute(brain,mask,initp,covar,covar0)
+function [clusterinvp,rawinvpmap,statmap] = myPermute(brain,mask,initp,covar)
 % Function for performing various permutation testing on brain maps
 % inputs 
 %   brain:  n-by-v matrix of brain images
 %   mask:   3D brain mask for the input 'brain'
 %   initp:  initial thresholding p-value. Default is 0.001;
 %   covar:  (optional) a n-by-1 vector. If supplied, the function performs permutation testing for significant correlation with Y
-%   covar0: (optional) a scalar. If supplied, the function calculates the predicted brain map when Y = Y0 using regression. This predicted
-%           map is permutation tested
 
 % input handling
-if nargin < 5; covar0 = []; end
 if nargin < 4; covar = []; end
 if nargin < 3; initp = 0.001; end
 init_thresh = 1-initp;
@@ -19,15 +16,13 @@ nrep = 5000;
 
 % analysistype
 if isempty(covar) % flip-sign t-tests
-    myfunction = @(braindata,covariate,covariate0,shuffle) ttestinvp(braindata, mask,shuffle);
-elseif isempty(covar0) % correlation test
-    myfunction = @(braindata,covariate,covariate0,shuffle) corrinvp(braindata,covariate, mask,shuffle);
-else % regression prediction test
-    myfunction = @(braindata,covariate,covariate0,shuffle) regpredinvp(braindata,covariate,covariate0, mask,shuffle);
+    myfunction = @(braindata,covariate,shuffle) ttestinvp(braindata, mask,shuffle);
+else % correlation test
+    myfunction = @(braindata,covariate,shuffle) corrinvp(braindata,covariate, mask,shuffle);
 end
 
 % get original test p-value and clusters formed
-[rawinvpmap,statmap] = myfunction(brain,covar,covar0,0);
+[rawinvpmap,statmap] = myfunction(brain,covar,0);
 origCC = bwconncomp(rawinvpmap>init_thresh);
 
 % space allocation
@@ -38,7 +33,7 @@ if origCC.NumObjects > 0 % there's at least one cluster at initial threshold
     % do permutation with cluster-size thresholding
     parfor i = 1:nrep
         disp(i)
-        [sampleinvpmap,samplestatmap] = myfunction(brain,covar,covar0,1); % resulting correlation p-values from shuffling
+        [sampleinvpmap,samplestatmap] = myfunction(brain,covar,1); % resulting correlation p-values from shuffling
         CC = bwconncomp(sampleinvpmap>init_thresh); % identify clusters based on initial thresholding
         if isempty(CC.PixelIdxList)
             maxstats(i) = 0;
