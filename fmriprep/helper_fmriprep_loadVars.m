@@ -4,7 +4,7 @@
 
 function [img,mask,var] = helper_fmriprep_loadVars(fmriprepdir,subjname,runnum,task,session)
 % if subject name already contains sub- prefix, remove it
-if strcmp(subjname(1:4),'sub-')
+if length(subjname)>3 && strcmp(subjname(1:4),'sub-')
     subjname = subjname(5:end);
 end
 

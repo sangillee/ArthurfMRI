@@ -1,12 +1,14 @@
-function [clusterinvp,rawinvpmap,statmap] = myPermute(brain,mask,initp,covar)
+function [clusterinvp,rawinvpmap,statmap] = myPermute(brain,mask,initp,covar,type)
 % Function for performing various permutation testing on brain maps
 % inputs 
 %   brain:  n-by-v matrix of brain images
 %   mask:   3D brain mask for the input 'brain'
 %   initp:  initial thresholding p-value. Default is 0.001;
 %   covar:  (optional) a n-by-1 vector. If supplied, the function performs permutation testing for significant correlation with Y
+%   type:   (optional) 1 or 2. If 1, we do cluster mass thresholding. If 2, we do cluster size. By default it's 1.
 
 % input handling
+if nargin < 5; type = 1; end
 if nargin < 4; covar = []; end
 if nargin < 3; initp = 0.001; end
 init_thresh = 1-initp;
@@ -38,12 +40,15 @@ if origCC.NumObjects > 0 % there's at least one cluster at initial threshold
         if isempty(CC.PixelIdxList)
             maxstats(i) = 0;
         else
-            statstat = nan(length(CC.PixelIdxList),1);
-            for j = 1:length(CC.PixelIdxList)
-                statstat(j) = sum(samplestatmap(CC.PixelIdxList{j}));
+            if type == 1 % cluster mass
+                statstat = nan(length(CC.PixelIdxList),1);
+                for j = 1:length(CC.PixelIdxList)
+                    statstat(j) = sum(samplestatmap(CC.PixelIdxList{j}));
+                end
+                maxstats(i) = max(statstat);
+            else % cluster extent
+                maxstats(i) = max(cellfun(@length,CC.PixelIdxList)); % cluster size thresholding
             end
-            maxstats(i) = max(statstat);
-            % maxstats(i) = max(cellfun(@length,CC.PixelIdxList)); cluster size thresholding
         end
     end
     

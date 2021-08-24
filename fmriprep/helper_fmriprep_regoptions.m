@@ -3,7 +3,7 @@
 % 2021-02-16: created with following default options:
 % % opts = struct;
 % % opts.FWHM = 0; % default no smoothing
-% % opts.measure = 'zstat'; % default z-statistics
+% % opts.measure = 'nothing'; % no additional outputs by default
 % % opts.HP = 0; % deafult no high-pass filtering
 % % opts.HRF = 'spm'; % default hrf
 % % opts.covar.cosines = 'all'; % cosine component covariates
@@ -15,7 +15,7 @@
 function opts = helper_fmriprep_regoptions
 opts = struct;
 opts.FWHM = 0; % default no smoothing
-opts.measure = 'zstat'; % default z-statistics
+opts.measure = 'nothing'; % no additional outputs by default
 opts.HP = 0; % deafult no high-pass filtering
 opts.HRF = 'spm'; % default hrf
 opts.covar.cosines = 9; % cosine component covariates
