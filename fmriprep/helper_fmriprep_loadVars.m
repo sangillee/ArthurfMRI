@@ -1,6 +1,7 @@
 % helper_fmriprep_loadVars
 % function to take care of loading images, masks, and covariates
 % 2021-02-06: created
+% 2021-09-02: incorporated missing runnum
 
 function [img,mask,var] = helper_fmriprep_loadVars(fmriprepdir,subjname,runnum,task,session)
 % if subject name already contains sub- prefix, remove it
@@ -10,9 +11,12 @@ end
 
 % set up fmriprep file directory
 if isempty(session)
-    address = [fmriprepdir,'sub-',subjname,'/func/sub-',subjname,'_task-',task,'_run-',num2str(runnum)];
+    address = [fmriprepdir,'sub-',subjname,'/func/sub-',subjname,'_task-',task];
 else
-    address = [fmriprepdir,'sub-',subjname,'/ses-scan',num2str(session),'/func/sub-',subjname,'_ses-scan',num2str(session),'_task-',task,'_run-',num2str(runnum)];
+    address = [fmriprepdir,'sub-',subjname,'/ses-scan',num2str(session),'/func/sub-',subjname,'_ses-scan',num2str(session),'_task-',task];
+end
+if ~isempty(runnum)
+    address = [address,'_run-',num2str(runnum)];
 end
 
 % load images

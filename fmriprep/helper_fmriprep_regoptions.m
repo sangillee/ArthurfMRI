@@ -6,7 +6,7 @@
 % % opts.measure = 'nothing'; % no additional outputs by default
 % % opts.HP = 0; % deafult no high-pass filtering
 % % opts.HRF = 'spm'; % default hrf
-% % opts.covar.cosines = 'all'; % cosine component covariates
+% % opts.covar.cosines = 50; % number of cosine component covariates. Surely, 50 would be enough even if the scan is long...
 % % opts.covar.a_comp_cor = 10; % a_comp_cor covariates
 % % opts.covar.csf = 1; % average csf activity covariate
 % % opts.covar.white_matter = 1; % average white matter activity covariates
@@ -18,7 +18,7 @@ opts.FWHM = 0; % default no smoothing
 opts.measure = 'nothing'; % no additional outputs by default
 opts.HP = 0; % deafult no high-pass filtering
 opts.HRF = 'spm'; % default hrf
-opts.covar.cosines = 9; % cosine component covariates
+opts.covar.cosines = 50; % cosine component covariates
 opts.covar.a_comp_cor = 10; % a_comp_cor covariates
 opts.covar.csf = 1; % average csf activity covariate
 opts.covar.white_matter = 1; % average white matter activity covariates
