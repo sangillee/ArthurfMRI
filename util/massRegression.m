@@ -3,6 +3,7 @@
 % 2021-02-06: created
 % 2021-02-14: renamed to massRegression, added additional measure calculations
 % 2021-02-16: incorporated mean centering
+% 2021-10-04: including the residual output
 
 function [coef,outcome] = massRegression(X,Y,measure)
 % if any(isnan(X(:))) % for debugging
@@ -59,6 +60,8 @@ switch measure
         se(perm,:) = repmat(rmse,p,1).*repmat(sqrt(sum(abs(RI).^2,2)),1,size(Y,2));
         pval = tcdf(coef./se,n-p);
         outcome = norminv(pval);
+    case 'resid'
+        outcome = Y-X*coef;
     otherwise
         error('unknown output statistic requested')
 end

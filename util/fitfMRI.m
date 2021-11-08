@@ -8,7 +8,8 @@
 % measure is the statistic that you want. can be MSE, R2, adjR2
 % calls on simBOLD
 
-function [coef,outcome] = fitfMRI(REG,Y,covariates,TR,HP,measure,hrf)
+function [coef,outcome] = fitfMRI(REG,Y,covariates,TR,HP,measure,hrf,drop)
+if nargin < 8; drop = 0; end
 if nargin < 7; hrf = 'spm'; end
 if nargin < 6; measure = 'nothing'; end
 if nargin < 5; HP = 0; end
@@ -23,6 +24,14 @@ if ~isempty(REG)
     X = [X,covariates];
 else
     X = covariates;
+end
+
+if drop > 0
+    dropframes = eye(size(X,1),drop);
+    if any((X(1,:)==1)&(all(X(2:end,:)==0))) % if there already is first volume regressor
+        dropframes(:,1) = [];
+    end
+    X = [X,dropframes];
 end
 
 % if high-pass filtering is used

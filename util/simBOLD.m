@@ -33,6 +33,7 @@ end
 function y = BOXCAR(dur,onset,offset,mod,dt)
 y = repmat(0:dt:dur,length(onset),1); ind = y<onset | y>offset;
 y(ind) = 0; y(~ind) = 1;
+mod(isnan(mod)) = 0;
 y = y'*mod;
 end
 

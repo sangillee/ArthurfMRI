@@ -67,9 +67,9 @@ function [invpmap,rmap] = corrinvp(brain,covar,mask,shuffle)
 if shuffle == 1
     n = length(covar);
     shuffling = randsample(n,n); % random shuffling of pairs
-    [r,p] = corr(brain,covar(shuffling));
+    [r,p] = corr(brain,covar(shuffling),'tail','right');
 else
-    [r,p] = corr(brain,covar);
+    [r,p] = corr(brain,covar,'tail','right');
 end
 invpmap = mask;
 invpmap(mask(:)==1) = 1-p; % inverse p-value
@@ -80,9 +80,9 @@ end
 function [invpmap,tmap] = ttestinvp(brain,mask,shuffle)
 if shuffle == 1
     shuffle = 2.*(randi(2,size(brain,1),1)-1.5);
-    [~,p,~,stats] = ttest(brain.*shuffle);
+    [~,p,~,stats] = ttest(brain.*shuffle,0,'tail','right');
 else
-    [~,p,~,stats] = ttest(brain);
+    [~,p,~,stats] = ttest(brain,0,'tail','right');
 end
 invpmap = mask;
 invpmap(mask(:)==1) = 1-p; % inverse p-value

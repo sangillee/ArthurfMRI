@@ -16,5 +16,5 @@ if opts.FWHM > 0
     img = smoothfMRI(img,opts.FWHM,2,mask);
 end
 
-[coef,outcome] = fitfMRI(REG,double(img),covariates,TR,opts.HP,opts.measure,opts.HRF);
+[coef,outcome] = fitfMRI(REG,double(img),covariates,TR,opts.HP,opts.measure,opts.HRF,opts.drop);
 end
