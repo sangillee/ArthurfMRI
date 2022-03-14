@@ -53,9 +53,48 @@ p = [6 16 1 1 6 0 32];
 fMRI_T = 16; % microtime resolution
 dt  = RT/fMRI_T;
 u   = (0:ceil(p(7)/dt)) - p(6)/dt;
-hrf = spm_Gpdf(u,p(1)/p(3),dt/p(3)) - spm_Gpdf(u,p(2)/p(4),dt/p(4))/p(5);
+hrf = localspm_Gpdf(u,p(1)/p(3),dt/p(3)) - localspm_Gpdf(u,p(2)/p(4),dt/p(4))/p(5);
 hrf = hrf((0:floor(p(7)/RT))*fMRI_T + 1);
 hrf = hrf'/sum(hrf);
+end
+
+function f = localspm_Gpdf(x,h,l)
+if nargin<3, error('Insufficient arguments'), end
+
+ad = [ndims(x);ndims(h);ndims(l)];
+rd = max(ad);
+as = [[size(x),ones(1,rd-ad(1))];...
+      [size(h),ones(1,rd-ad(2))];...
+      [size(l),ones(1,rd-ad(3))]];
+rs = max(as);
+xa = prod(as,2)>1;
+if sum(xa)>1 && any(any(diff(as(xa,:)),1))
+    error('non-scalar args must match in size');
+end
+
+f = zeros(rs);
+
+md = ( ones(size(x))  &  h>0  &  l>0 );
+if any(~md(:))
+    f(~md) = NaN;
+    warning('Returning NaN for out of range arguments');
+end
+
+ml = ( md  &  x==0  &  h<1 );
+f(ml) = Inf;
+ml = ( md  &  x==0  &  h==1 ); if xa(3), mll=ml; else mll=1; end
+f(ml) = l(mll);
+
+%-Compute where defined and x>0
+Q  = find( md  &  x>0 );
+if isempty(Q), return, end
+if xa(1), Qx=Q; else Qx=1; end
+if xa(2), Qh=Q; else Qh=1; end
+if xa(3), Ql=Q; else Ql=1; end
+
+%-Compute
+f(Q) = exp( (h(Qh)-1).*log(x(Qx)) +h(Qh).*log(l(Ql)) - l(Ql).*x(Qx)...
+        -gammaln(h(Qh)) );
 end
 
 function hrf = local_gamma_hrf(RT)
