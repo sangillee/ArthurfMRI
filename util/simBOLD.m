@@ -3,6 +3,9 @@ if nargin<4
     type = 'spm';
 end
 dt = 0.01;
+correction = TR/2+4.5*dt; % this pulls the onset a bit earlier to account for slice timing correction
+% if the event happens at time 0, the image is acquired from 0 ~ TR and is slice corrected to 0.5TR timepoint
+fslEV(:,1) = fslEV(:,1)-correction;
 boxcar_y = BOXCAR(TR*nvol,fslEV(:,1),fslEV(:,1)+fslEV(:,2),fslEV(:,3),dt);
 if strcmp(type,'fsl')
     signal = conv(local_gamma_hrf(dt),boxcar_y);

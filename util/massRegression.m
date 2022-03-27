@@ -4,6 +4,7 @@
 % 2021-02-14: renamed to massRegression, added additional measure calculations
 % 2021-02-16: incorporated mean centering
 % 2021-10-04: including the residual output
+% 2022-03-22: incorporated safe calculation of zstat by always using negative tstat to calculate p-values
 
 function [coef,outcome] = massRegression(X,Y,measure)
 % if any(isnan(X(:))) % for debugging
@@ -58,8 +59,11 @@ switch measure
         rmse = vecnorm(Y-X*coef,2,1)./sqrt(max(0,n-p));
         se = zeros(ncolX,size(Y,2));
         se(perm,:) = repmat(rmse,p,1).*repmat(sqrt(sum(abs(RI).^2,2)),1,size(Y,2));
-        pval = tcdf(coef./se,n-p);
+        tstat = coef./se;
+        poststat = tstat>0; tstat(poststat) = -tstat(poststat); % calculating probabilities close to 0 is numerically safer than those close to 1
+        pval = tcdf(tstat,n-p);
         outcome = norminv(pval);
+        outcome(poststat) = -outcome(poststat);
     case 'resid'
         outcome = Y-X*coef;
     otherwise

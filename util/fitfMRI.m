@@ -27,11 +27,8 @@ else
 end
 
 if drop > 0
-    dropframes = eye(size(X,1),drop);
-    if any((X(1,:)==1)&(all(X(2:end,:)==0))) % if there already is first volume regressor
-        dropframes(:,1) = [];
-    end
-    X = [X,dropframes];
+    X(1:drop,:) = [];
+    Y(1:drop,:) = [];
 end
 
 % if high-pass filtering is used
