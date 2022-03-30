@@ -8,7 +8,9 @@
 % measure is the statistic that you want. can be MSE, R2, adjR2
 % calls on simBOLD
 
-function [coef,outcome] = fitfMRI(REG,Y,covariates,TR,HP,measure,hrf,drop)
+% 2022-03-29: Added option for temporal derivative, which can be used by having a fourth column on the FSL-style matrix for REG
+
+function [coef,stats] = fitfMRI(REG,Y,covariates,TR,HP,measure,hrf,drop)
 if nargin < 8; drop = 0; end
 if nargin < 7; hrf = 'spm'; end
 if nargin < 6; measure = 'nothing'; end
@@ -18,10 +20,17 @@ nvol = size(Y,1);
 % create regressors
 if ~isempty(REG)
     X = nan(nvol,length(REG));
+    tempderiv = nan(nvol,length(REG));
+    tempcounter = 0;
     for i = 1:size(X,2)
-        X(:,i) = simBOLD(TR,nvol,REG{i},hrf);
+        if size(REG{i},2) == 4 % temporal derivative requested
+            tempcounter = tempcounter+1;
+            [X(:,i),tempderiv(:,tempcounter)] = simBOLD(TR,nvol,REG{i}(:,1:3),hrf);
+        else
+            X(:,i) = simBOLD(TR,nvol,REG{i}(:,1:3),hrf);
+        end
     end
-    X = [X,covariates];
+    X = [X,tempderiv(:,1:tempcounter),covariates];
 else
     X = covariates;
 end
@@ -38,7 +47,7 @@ if HP > 0
 end
 
 % run regression
-[coef,outcome] = massRegression(X,Y,measure);
+[coef,stats] = massRegression(X,Y,measure);
 end
 
 function F = HPfilter(nvol,cutoffseconds,TR)

@@ -1,4 +1,4 @@
-function reg = simBOLD(TR,nvol,fslEV,type)
+function [reg,tD] = simBOLD(TR,nvol,fslEV,type)
 if nargin<4
     type = 'spm';
 end
@@ -22,6 +22,15 @@ else
 end
 
 reg = signal(1:(TR/dt):(end-1));
+
+if nargout > 1
+    % temporal derivative
+    tD = [reg(2)-reg(1);0.5.*(reg(3:end)-reg(1:end-2));reg(end)-reg(end-1)];
+    % orthogonalize
+    temp = [reg,ones(size(reg))];
+    tD = tD - temp*mldivide(temp,tD);
+end
+
 % if you want to see the results:
 if 0
     subplot(3,1,1)

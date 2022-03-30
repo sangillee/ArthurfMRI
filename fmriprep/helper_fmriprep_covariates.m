@@ -3,22 +3,20 @@
 % 2021-02-06: created
 % 2021-02-16: renamed to helper_fmriprep_Covariates from helper_fmriprep_defaultCovariates
 %             now accepts option structure to identify which covariates to include
-% 2022-03-27: removed default optioning, added option sanity checks
+% 2022-03-27: removed default optioning
 %             removed first volume index regressor for t-1 motion regressors
 
 function covariates = helper_fmriprep_covariates(var,opts)
-helper_fmriprep_regoptions(opts) % option struct error checking
-opts = opts.covar;
 covariates = []; % matrix for covariates
 
 % cosine components
 for i = 1:opts.cosines
-    covariates = [covariates,loadcovar(['cosine',sprintf('%02d',i-1)],var)];
+    covariates = [covariates,loadcovar({['cosine',sprintf('%02d',i-1)]},var)];
 end
 
 % a_comp_cor components
 for i = 1:opts.a_comp_cor
-    covariates = [covariates,loadcovar(['a_comp_cor_',sprintf('%02d',i-1)],var)]; % adding top CSF+WM components.
+    covariates = [covariates,loadcovar({['a_comp_cor_',sprintf('%02d',i-1)]},var)]; % adding top CSF+WM components.
 end
 
 % csf average
@@ -42,10 +40,6 @@ switch opts.motionparams
     case 24
         motion = loadcovar({'trans_x','trans_y','trans_z','rot_x','rot_y','rot_z','trans_x_power2','trans_y_power2','trans_z_power2','rot_x_power2','rot_y_power2','rot_z_power2'},var);
         motion = [motion,[mean(motion);motion(1:end-1,:)]]; % t-1 motion with mean-imputed first volume
-    case 25
-        motion = loadcovar({'trans_x','trans_y','trans_z','rot_x','rot_y','rot_z','trans_x_power2','trans_y_power2','trans_z_power2','rot_x_power2','rot_y_power2','rot_z_power2'},var);
-        motion = [motion,[mean(motion);motion(1:end-1,:)]]; % t-1 motion with mean-imputed first volume
-        motion = [motion,[mean(var.framewise_displacement(2:end));var.framewise_displacement(2:end)]];
 end
 covariates = [covariates,motion];
 
