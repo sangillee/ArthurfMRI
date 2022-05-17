@@ -7,7 +7,7 @@
 % % opts.FWHM = 0; % default no smoothing
 % % opts.measure = 'nothing'; % no additional outputs by default
 % % opts.HP = 0; % deafult no high-pass filtering
-% % opts.HRF = 'spm'; % default hrf
+% % opts.HRF = 'fsl'; % default hrf
 % % opts.drop = 2; % default first few volumes to remove
 % % opts.covar.cosines = 50; % maximum number of cosine component covariates. Surely, 50 would be enough even if the scan is long...
 % % opts.covar.a_comp_cor = 10; % maximum number of a_comp_cor covariates
@@ -22,7 +22,7 @@ if nargin == 0
     opts.FWHM = 0;                  % default no smoothing
     opts.measure = 'nothing';       % no additional outputs by default
     opts.HP = 0;                    % deafult no high-pass filtering
-    opts.HRF = 'spm';               % default hrf
+    opts.HRF = 'fsl';               % default hrf
     opts.drop = 2;                  % default first few volumes to remove
     opts.covar.cosines = 50;        % cosine component covariates
     opts.covar.a_comp_cor = 10;     % a_comp_cor covariates

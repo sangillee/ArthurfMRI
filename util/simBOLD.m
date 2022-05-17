@@ -1,52 +1,46 @@
 function [reg,tD] = simBOLD(TR,nvol,fslEV,type)
 if nargin<4
-    type = 'spm';
+    type = 'fsl'; % default HRF type of single gamma
 end
-dt = 0.01;
-correction = TR/2+4.5*dt; % this pulls the onset a bit earlier to account for slice timing correction
-% if the event happens at time 0, the image is acquired from 0 ~ TR and is slice corrected to 0.5TR timepoint
-fslEV(:,1) = fslEV(:,1)-correction;
+dt = 0.05; % time resolution
+
+% generate high-temporal-resolution regressors
 boxcar_y = BOXCAR(TR*nvol,fslEV(:,1),fslEV(:,1)+fslEV(:,2),fslEV(:,3),dt);
 if strcmp(type,'fsl')
     signal = conv(local_gamma_hrf(dt),boxcar_y);
-    cutind = (length(signal)-length(boxcar_y));
-    signal = signal(1:end-cutind);
 elseif strcmp(type,'spm')
     signal = conv(local_spm_hrf(dt),boxcar_y);
-    cutind = (length(signal)-length(boxcar_y));
-    signal = signal(1:end-cutind);
 elseif strcmp(type,'box')
     signal = boxcar_y;
 else
     error('unknown HRF requested')
 end
 
-reg = signal(1:(TR/dt):(end-1));
+% down-sampling to match middle of each TR
+reg = signal(round(((1:nvol)-0.5)*TR/dt)+1);
 
+% temporal derivative calculation, if requested
 if nargout > 1
-    % temporal derivative
     tD = [reg(2)-reg(1);0.5.*(reg(3:end)-reg(1:end-2));reg(end)-reg(end-1)];
-    % orthogonalize
     temp = [reg,ones(size(reg))];
-    tD = tD - temp*mldivide(temp,tD);
-end
-
-% if you want to see the results:
-if 0
-    subplot(3,1,1)
-    plot(boxcar_y)
-    subplot(3,1,2)
-    plot(signal)
-    subplot(3,1,3)
-    plot(reg)
+    tD = tD - temp*mldivide(temp,tD); % orthogonalize
 end
 end
 
 function y = BOXCAR(dur,onset,offset,mod,dt)
-y = repmat(0:dt:dur,length(onset),1); ind = y<onset | y>offset;
+y = repmat(0:dt:dur,length(onset),1); ind = y<onset | y>=offset;
 y(ind) = 0; y(~ind) = 1;
 mod(isnan(mod)) = 0;
 y = y'*mod;
+end
+
+function hrf = local_gamma_hrf(DT)
+t = 0:DT:(21-DT);
+meanlag = 6; stddev = 3;
+a = (meanlag/stddev)^2;
+b = (stddev^2)/meanlag;
+hrf = gampdf(t,a,b)*DT;%002405;
+hrf = hrf./sum(hrf);
 end
 
 function hrf = local_spm_hrf(RT)
@@ -107,19 +101,4 @@ if xa(3), Ql=Q; else Ql=1; end
 %-Compute
 f(Q) = exp( (h(Qh)-1).*log(x(Qx)) +h(Qh).*log(l(Ql)) - l(Ql).*x(Qx)...
         -gammaln(h(Qh)) );
-end
-
-function hrf = local_gamma_hrf(RT)
-t = 0:RT:32;
-meanlag = 6; stddev = 3;
-a = (meanlag/stddev)^2;
-b = meanlag/(stddev^2);
-hrf = pdf_gamma(t,a,b) * 0.0063;
-end
-
-function pdfx = pdf_gamma(x,a,b)
-nx = length(x);
-pdfx = zeros(nx,1);
-ind = find(x>0);
-pdfx(ind) = (b.^2) .* (x(ind).^(a-1)) .* exp(-b.*x(ind)) ./ gamma(a);
 end

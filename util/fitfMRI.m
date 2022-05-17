@@ -42,7 +42,7 @@ end
 
 % if high-pass filtering is used
 if HP > 0
-    F = HPfilter(nvol,HP,TR); % filter calculation
+    F = HPfilter(nvol-drop,HP,TR); % filter calculation
     Y = F*Y; X = F*X;
 end
 

@@ -7,9 +7,6 @@
 % 2022-03-22: incorporated safe calculation of zstat by always using negative tstat to calculate p-values
 
 function [coef,stats] = massRegression(X,Y,measure)
-% if any(isnan(X(:))) % for debugging
-%     keyboard
-% end
 assert(~any(isnan(X(:))),'nan found in X matrix')
 assert(~any(isnan(Y(:))),'nan found in Y matrix')
 
@@ -25,48 +22,46 @@ elseif isvector(R)
 else
     p = sum(abs(diag(R)) > max(n,ncolX)*eps(R(1)));
 end
-
 if p < ncolX
     warning(message('stats:regress:RankDefDesignMat'));
     R = R(1:p,1:p); Q = Q(:,1:p); perm = perm(1:p);
 end
 coef = zeros(ncolX,size(Y,2));coef(perm,:) = R \ (Q'*Y);
 
-switch measure
-    case 'nothing'
-        stats = [];
-    case 'R2'
-        yhat = X*coef;
-        stats = diag(corr(yhat,Y))'.^2;
-    case 'fstat'
-        yhat = X*coef;
-        R2 = diag(corr(yhat,Y))'.^2;
-        stats = (R2.*(n-p))./((1-R2).*(p-1));
-    case 'zfstat'
-        yhat = X*coef;
-        R2 = diag(corr(yhat,Y))'.^2;
-        F = (R2.*(n-p))./((1-R2).*(p-1));
-        p = fcdf(F,p-1,n-p,'upper');
-        stats = -norminv(p);
-    case 'tstat'
-        RI = R\eye(p);
-        rmse = vecnorm(Y-X*coef,2,1)./sqrt(max(0,n-p));
-        se = zeros(ncolX,size(Y,2));
-        se(perm,:) = repmat(rmse,p,1).*repmat(sqrt(sum(abs(RI).^2,2)),1,size(Y,2));
-        stats = coef./se;
-    case 'zstat'
-        RI = R\eye(p);
-        rmse = vecnorm(Y-X*coef,2,1)./sqrt(max(0,n-p));
-        se = zeros(ncolX,size(Y,2));
-        se(perm,:) = repmat(rmse,p,1).*repmat(sqrt(sum(abs(RI).^2,2)),1,size(Y,2));
-        tstat = coef./se;
-        poststat = tstat>0; tstat(poststat) = -tstat(poststat); % calculating probabilities close to 0 is numerically safer than those close to 1
-        pval = tcdf(tstat,n-p);
-        stats = norminv(pval);
-        stats(poststat) = -stats(poststat);
-    case 'resid'
-        stats = Y-X*coef;
-    otherwise
-        error('unknown output statistic requested')
+if strcmp(measure,'nothing')
+    stats = [];
+else
+    yhat = X*coef;
+    switch measure
+        case 'R2'
+            stats = (sum(zscore(yhat).*zscore(Y))./ (n-1)).^2; %diag(corr(yhat,Y))'.^2;
+        case 'fstat'
+            R2 = diag(corr(yhat,Y))'.^2;
+            stats = (R2.*(n-p))./((1-R2).*(p-1));
+        case 'zfstat'
+            R2 = diag(corr(yhat,Y))'.^2;
+            F = (R2.*(n-p))./((1-R2).*(p-1));
+            pval = fcdf(F,p-1,n-p,'upper');
+            stats = -norminv(pval);
+        case 'tstat'
+            stats = getT(R,p,Y,yhat,n,ncolX,perm,coef);
+        case 'zstat'
+            tstat = getT(R,p,Y,yhat,n,ncolX,perm,coef);
+            poststat = tstat>0; tstat(poststat) = -tstat(poststat); % calculating probabilities close to 0 is numerically safer than those close to 1
+            pval = tcdf(tstat,n-p-1);
+            stats = norminv(pval);
+            stats(poststat) = -stats(poststat);
+        case 'resid'
+            stats = Y-yhat;
+        otherwise
+            error('unknown output statistic requested')
+    end
 end
+end
+
+function tstat = getT(R,p,Y,yhat,n,ncolX,perm,coef)
+rmse = vecnorm(Y-yhat,2,1)./sqrt(max(0,n-p));
+se = zeros(ncolX,size(Y,2));
+se(perm,:) = repmat(rmse,p,1).*repmat(sqrt(sum(abs(R\eye(p)).^2,2)),1,size(Y,2));
+tstat = coef./se;
 end
