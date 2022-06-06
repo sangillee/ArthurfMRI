@@ -18,11 +18,11 @@ if nargin < 5; HP = 0; end
 nvol = size(Y,1);
 
 % create regressors
-if ~isempty(REG)
-    X = nan(nvol,length(REG));
-    tempderiv = nan(nvol,length(REG));
-    tempcounter = 0;
-    for i = 1:size(X,2)
+X = nan(nvol,length(REG)); Xcounter = 0; 
+tempderiv = nan(nvol,length(REG)); tempcounter = 0;
+for i = 1:length(REG)
+    if ~isempty(REG{i})
+        Xcounter = Xcounter + 1;
         if size(REG{i},2) == 4 % temporal derivative requested
             tempcounter = tempcounter+1;
             [X(:,i),tempderiv(:,tempcounter)] = simBOLD(TR,nvol,REG{i}(:,1:3),hrf);
@@ -30,10 +30,8 @@ if ~isempty(REG)
             X(:,i) = simBOLD(TR,nvol,REG{i}(:,1:3),hrf);
         end
     end
-    X = [X,tempderiv(:,1:tempcounter),covariates];
-else
-    X = covariates;
 end
+X = [X(:,1:Xcounter),tempderiv(:,1:tempcounter),covariates];
 
 if drop > 0
     X(1:drop,:) = [];
@@ -48,19 +46,4 @@ end
 
 % run regression
 [coef,stats] = massRegression(X,Y,measure);
-end
-
-function F = HPfilter(nvol,cutoffseconds,TR)
-sigN2=((cutoffseconds/TR)/sqrt(2))^2;
-K=toeplitz(1/sqrt(2*pi*sigN2)*exp(-(0:(nvol-1)).^2/(2*sigN2)));
-coder.extrinsic('spdiags');
-K=spdiags(1./sum(K,2), 0, nvol,nvol)*K;
-H = zeros(nvol,nvol); % Smoothing matrix, s.t. H*y is smooth line
-Q = [ones(nvol,1) (1:nvol)'];
-for k = 1:nvol
-    W = diag(K(k,:));
-    Hat = Q*pinv(W*Q)*W;
-    H(k,:) = Hat(k,:);
-end
-F=eye(nvol)-H;
 end
