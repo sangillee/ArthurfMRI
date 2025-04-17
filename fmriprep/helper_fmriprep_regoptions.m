@@ -5,12 +5,13 @@
 %
 % % default options
 % % opts.FWHM = 0; % default no smoothing
-% % opts.measure = 'nothing'; % no additional outputs by default
+% % opts.measure = 'nothing'; % no additional outputs by default. see massRegression for all options
 % % opts.HP = 0; % deafult no high-pass filtering
 % % opts.HRF = 'fsl'; % default hrf
 % % opts.drop = 2; % default first few volumes to remove
-% % opts.covar.cosines = 50; % maximum number of cosine component covariates. Surely, 50 would be enough even if the scan is long...
-% % opts.covar.a_comp_cor = 10; % maximum number of a_comp_cor covariates
+% % opts.covar.cosines = 50; % maximum number of cosine component covariates. Surely, 50 would be enough even if the scan is long. Typically
+% %                            fmriprep provides only up to a certain number that is appropriate for the scan duration (e.g. ~ 7 or 10)
+% % opts.covar.a_comp_cor = 0; % maximum number of a_comp_cor covariates
 % % opts.covar.csf = 0; % average csf activity covariate
 % % opts.covar.white_matter = 0; % average white matter activity covariates
 % % opts.covar.motionparams = 24; % 0 for none, 6 for default, 12 for squareds, 24 for t-1 expansion
@@ -25,7 +26,7 @@ if nargin == 0
     opts.HRF = 'fsl';               % default hrf
     opts.drop = 2;                  % default first few volumes to remove
     opts.covar.cosines = 50;        % cosine component covariates
-    opts.covar.a_comp_cor = 10;     % a_comp_cor covariates
+    opts.covar.a_comp_cor = 0;     % a_comp_cor covariates
     opts.covar.csf = 0;             % average csf activity covariate
     opts.covar.white_matter = 0;    % average white matter activity covariates
     opts.covar.motionparams = 24;   % 0 for none, 6 for default, 12 for squareds, 24 for t-1 expansion
@@ -52,6 +53,6 @@ else
     % additional checks
     assert(ismember(opts.covar.csf,[0,1]),'csf option should be either 0 or 1')
     assert(ismember(opts.covar.white_matter,[0,1]),'white_matter option should be either 0 or 1')
-    assert(ismember(opts.covar.motionparams,[0,6,12,24,25]),'motion param options should be one of 0, 6, 12, or 24')
+    assert(ismember(opts.covar.motionparams,[0,6,12,24]),'motion param options should be one of 0, 6, 12, or 24')
 end
 end

@@ -1,0 +1,1 @@
+fslmaths aal_cerebrum_mask.nii.gz -kernel gauss 5 -dilM -ero aal_cerebrum_smooth_mask
