@@ -13,3 +13,5 @@ fmriprep: Contains function for running glm while interfacing with fmriprep prep
 IO: contains two functions, Niftiopen and Niftisave, which builds upon MATLAB's niftiread and niftiwrite by performing numerical scaling when opening nifti files and automatically finding common nifti templates when writing. Particularly useful for directly saving vector-formatted brain data without explicitly loading mask images.
 
 permutation: contains two functions for performing permutation tests.
+
+searchlight: contains two functions for performing searchlight MVPA analysis.
